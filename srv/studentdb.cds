@@ -87,7 +87,7 @@ annotate StudentDB.Courses with @(
             Value: description
         },
         {
-            Value: books
+            Value: Books.books.description
         },
     ],
     UI.FieldGroup #CourseInformation: {
