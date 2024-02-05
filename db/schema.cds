@@ -26,6 +26,8 @@ entity Student: cuid, managed {
     };
     @title: 'Age'
     virtual age: Integer @Core.Computed;
+    @title: 'Is Alumini'
+    is_alumini: Boolean default false;
 }
 
 entity StudentLanguages: managed, cuid {

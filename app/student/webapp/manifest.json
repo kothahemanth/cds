@@ -111,6 +111,19 @@
                     "route": "StudentObjectPage"
                   }
                 }
+              },
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "actions": {
+                    "StudentListExt": {
+                      "press": "student.ext.studentListExt.StudentListExt.SetAlumini",
+                      "visible": true,
+                      "enabled": true,
+                      "requiresSelection": true,
+                      "text": "Set Alumini"
+                    }
+                  }
+                }
               }
             }
           }
