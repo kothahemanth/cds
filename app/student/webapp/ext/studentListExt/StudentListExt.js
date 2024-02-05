@@ -1,24 +1,31 @@
-spawn.ui.define([
+sap.ui.define([
     "sap/m/MessageToast"
 ], function(MessageToast) {
     'use strict';
 
     return {
-        SetAlumini: function(oBindingcontext,aSelectedContexts) {
-            aSelectedContexts.forEach(element =>{
-                MessageToast.show("hello World");
-                var aData = j.Query.ajax({
-                    type:'PATCH',
+        SetAlumni: function(oBindingContext,aSelectedContexts) {       
+             aSelectedContexts.forEach(element => {
+                MessageToast.show(element.sPath);
+                var aData = jQuery.ajax({
+                    type: "PATCH",
                     contentType: "application/json",
-                    url:"/odata/v4/student-db"+aSelectedContexts[0].sPath,
-                    dataType: "json",
-                    async: false,
-                    json: {'is_alumini':true}
-
-                });
-
+                    url: "/odata/v4/student-db"+element.sPath,
+                    data: JSON.stringify({is_alumni:true})
+                }).then(element.requestRefresh());
             });
-            console.log(element);
-        }
-    };
-});
+        },
+        SetStudent: function(oBindingContext,aSelectedContexts) {       
+            aSelectedContexts.forEach(element => {
+               MessageToast.show(element.sPath);
+               var aData = jQuery.ajax({
+                   type: "PATCH",
+                   contentType: "application/json",
+                   url: "/odata/v4/student-db"+element.sPath,
+                   data: JSON.stringify({is_alumni:false})
+               }).then(element.requestRefresh());
+           });
+       }
+    }
+}
+)
