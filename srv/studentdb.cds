@@ -87,6 +87,7 @@ annotate StudentDB.Courses with @(
             Value: description
         },
         {
+            Label: 'Books',
             Value: Books.books.description
         },
     ],
