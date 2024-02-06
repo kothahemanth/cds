@@ -1,18 +1,20 @@
-using { com.satinfotech.studentdb as db} from '../db/schema';
+using { com.satinfotech.studentdb as db } from '../db/schema';
 
 service StudentDB {
     entity Student as projection on db.Student;
-    entity Student.Languages as projection on db.Student.Languages;
     entity Gender as projection on db.Gender;
-    entity Courses.Books as projection on db.Courses.Books;
-    entity Books as projection on db.Books;
-    entity Languages as projection on db.Languages {
+    entity Books as projection on db.Books{
         @UI.Hidden
         ID,
         *
     };
-    entity Courses as projection on db.Courses {
+    entity Courses as projection on db.Courses{
         @UI.Hidden: true
+        ID,
+        *
+    };
+    entity Languages as projection on db.Languages{
+        @UI.Hidden
         ID,
         *
     };
@@ -21,35 +23,20 @@ service StudentDB {
 annotate StudentDB.Student with @odata.draft.enabled;
 annotate StudentDB.Courses with @odata.draft.enabled;
 annotate StudentDB.Languages with @odata.draft.enabled;
+//annotate studentDB.Books with @odata.draft.enabled;
 
 
 annotate StudentDB.Student with {
+    stdid @assert.format: '^[a-zA-Z0-9]{2,}$';
     first_name @assert.format: '^[a-zA-Z]{2,}$';
-    last_name @assert.format: '^[a-zA-Z]{2,}$';    
+    last_name @assert.format: '^[a-zA-Z]{2,}$';
     email_id @assert.format: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
-    pan_no @assert.format: '^[A-Z]{5}[0-9]{4}[A-Z]{1}';
+    pan_no @assert.format: '[A-Z]{5}[0-9]{4}[A-Z]{1}';
+    //telephone @assert.format: '^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$';
 }
 
-annotate StudentDB.Student.Languages with @(
-    UI.LineItem: [
-        {
-            Label: 'Languages',
-            Value: lang_ID
-        },
-    ]
-);
-
-annotate StudentDB.Courses.Books with @(
-    UI.LineItem: [
-        {
-            Label: 'Books',
-            Value: books_ID
-        },
-    ]
-);
-
-annotate StudentDB.Languages with @(
-    UI.LineItem: [
+annotate StudentDB.Books with @(
+    UI.LineItem:[
         {
             Value: code
         },
@@ -57,95 +44,125 @@ annotate StudentDB.Languages with @(
             Value: description
         }
     ],
-    UI.FieldGroup #Languages: {
-        $Type: 'UI.FieldGroupType',
-        Data: [
+     UI.FieldGroup #Books : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
             {
-                Value: code,
+                Value : code,
             },
             {
-                Value: description,
+                Value : description,
             }
         ],
     },
-    UI.Facets: [
+    UI.Facets : [
         {
-            $Type: 'UI.ReferenceFacet',
-            ID: 'LanguagesFacet',
-            Label: 'Languages',
-            Target: '@UI.FieldGroup#Languages',
+            $Type : 'UI.ReferenceFacet',
+            ID : 'BooksFacet',
+            Label : 'Books',
+            Target : '@UI.FieldGroup#Books',
         },
     ],
+
+);
+
+annotate StudentDB.Courses.Books with @(
+    UI.LineItem:[
+        {
+            Label: 'Books',
+            Value: book_ID
+        },
+      
+    ],
+    UI.FieldGroup #CourseBooks : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
+            {
+                Value : book_ID,
+            }
+        ],
+    },
+    UI.Facets : [
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID : 'BooksFacet',
+            Label : 'Books',
+            Target : '@UI.FieldGroup#CourseBooks',
+        },
+    ],
+);
+
+annotate StudentDB.Student.Languages with @(
+    UI.LineItem:[
+        {
+            Label: 'Languages',
+            Value: lang_ID
+        },
+      
+    ],
+    UI.FieldGroup #StudentLanguages : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
+            {
+                Value : lang_ID,
+            }
+        ],
+    },
+    UI.Facets : [
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID : 'LanguagesFacet',
+            Label : 'Languages',
+            Target : '@UI.FieldGroup#StudentLanguages',
+        },
+    ],
+);
+
+annotate StudentDB.Languages with @(
+    UI.LineItem:[
+        {
+            Value: code
+        },
+        {
+            Value: description
+        }
+    ],
+     UI.FieldGroup #Languages : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
+            {
+                Value : code,
+            },
+            {
+                Value : description,
+            }
+        ],
+    },
+    UI.Facets : [
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID : 'LanguagesFacet',
+            Label : 'Languages',
+            Target : '@UI.FieldGroup#Languages',
+        },
+    ],
+
 );
 
 annotate StudentDB.Courses with @(
     UI.LineItem: [
         {
-            Value: code
+            Value : code
         },
         {
-            Value: description
+            Value : description
         },
         {
             Label: 'Books',
-            Value: Books.books.description
+            Value : Books.book.description
         },
     ],
-    UI.FieldGroup #CourseInformation: {
-        $Type: 'UI.FieldGroupType',
-        Data: [
-            {
-                Value: code,
-            },
-            {
-                Value: description,
-            },
-            {
-                Value: books,
-            },
-        ],
-    },
-    UI.Facets: [
-        {
-            $Type: 'UI.ReferenceFacet',
-            ID: 'CourseInformationFacet',
-            Label: 'Course Information',
-            Target: '@UI.FieldGroup#CourseInformation',
-        },
-        {
-            $Type: 'UI.ReferenceFacet',
-            ID: 'CourseBooksFacet',
-            Label: 'Books Information',
-            Target: 'Books/@UI.LineItem',
-        },
-    ],
-);
-
-annotate StudentDB.Gender with @(
-    UI.LineItem: [
-        {
-            @Type: 'UI.DataField',
-            Value: code
-        },
-        {
-            @Type: 'UI.DataField',
-            Value: description
-        },
-    ]
-);
-
-annotate StudentDB.Books with @(
-    UI.LineItem:[
-        {
-            @Type: 'UI.DataField',
-            Value: code
-        },
-        {
-            @Type: 'UI.DataField',
-            Value: description
-        },
-    ],
-    UI.FieldGroup #Books : {
+    UI.FieldGroup #CourseInformation : {
         $Type : 'UI.FieldGroupType',
         Data : [
             {
@@ -159,133 +176,129 @@ annotate StudentDB.Books with @(
     UI.Facets : [
         {
             $Type : 'UI.ReferenceFacet',
-            ID : 'BooksFacet',
-            Label : 'Books',
-            Target : '@UI.FieldGroup#Books',
+            ID : 'StudentInfoFacet',
+            Label : 'Student Information',
+            Target : '@UI.FieldGroup#CourseInformation',
         },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID : 'BooksFacet',
+            Label : 'Books Information',
+            Target : 'Books/@UI.LineItem',
+        },
+        
     ],
 );
 
-annotate StudentDB.Courses.Books with {
-    books @(
-        Common.Text: books.description,
-        Common.TextArrangement: #TextOnly,
-        Common.ValueListWithFixedValues: true,
-        Common.ValueList: {
-            Label: 'Books',
-            CollectionPath: 'Books',
-            Parameters: [   
-                {
-                    $Type: 'Common.ValueListParameterInOut',
-                    LocalDataProperty: books_ID,
-                    ValueListProperty: 'ID'
-                },
-                {
-                    $Type: 'Common.ValueListParameterDisplayOnly',
-                    ValueListProperty: 'code'
-                },
-                {
-                    $Type: 'Common.ValueListParameterDisplayOnly',
-                    ValueListProperty: 'books.description'
-                },
-            ]
-        }
-    );
-}
-
-
+annotate StudentDB.Gender with @(
+    UI.LineItem: [
+        {
+            $Type : 'UI.DataField',
+            Value : code   
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : description
+        },
+    ]
+);
 
 annotate StudentDB.Student with @(
     UI.LineItem: [
         {
-            $Type: 'UI.DataField',
-            Value: stdid
+            $Type : 'UI.DataField',
+            Value : stdid
         },
         {
-            $Type: 'UI.DataField',
+            $Type : 'UI.DataField',
             Label: 'Gender',
-            Value: gender
+            Value : gender
         },
         {
-            $Type: 'UI.DataField',
-            Value: first_name
+            $Type : 'UI.DataField',
+            Value : first_name
         },
         {
-            $Type: 'UI.DataField',
-            Value: last_name
+            $Type : 'UI.DataField',
+            Value : last_name
         },
         {
-            $Type: 'UI.DataField',
-            Value: email_id
+            $Type : 'UI.DataField',
+            Value : email_id
         },
         {
-            $Type: 'UI.DataField',
-            Value: pan_no 
+            $Type : 'UI.DataField',
+            Value : pan_no
         },
         {
-            $Type: 'UI.DataField',
-            Value: dob
+            $Type : 'UI.DataField',
+            Value : dob
         },
         {
-            Value: course.code
+            $Type : 'UI.DataField',
+            Value : age
+        },
+        {
+            Value : course.code
         },
         {
             Value: is_alumni
         }
     ],
-    UI.SelectionFields: [first_name, last_name, email_id],
-    UI.FieldGroup #StudentInformation: {
-        $Type: 'UI.FieldGroupType',
-        Data: [
+    UI.SelectionFields: [ stdid, first_name, last_name, email_id, pan_no, dob, age],       
+    UI.FieldGroup #StudentInformation : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
             {
-                $Type: 'UI.DataField',
-                Value: stdid,
+                $Type : 'UI.DataField',
+                Value : stdid,
             },
             {
-                $Type: 'UI.DataField',
+                $Type : 'UI.DataField',
                 Label: 'Gender',
-                Value: gender,
+                Value : gender
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : first_name,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : last_name,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : email_id,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : pan_no
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : dob,
             },
             {
                 $Type: 'UI.DataField',
-                Value: first_name,
+                Value: course_ID
             },
-            {
-                $Type: 'UI.DataField',
-                Value: last_name,
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: email_id,
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: pan_no,
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: dob,
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: course_ID,
-            }
         ],
     },
-    UI.Facets: [
+    UI.Facets : [
         {
-            $Type: 'UI.ReferenceFacet',
-            ID: 'StudentInfoFacet',
-            Label: 'Student Information',
-            Target: '@UI.FieldGroup#StudentInformation',
+            $Type : 'UI.ReferenceFacet',
+            ID : 'StudentInfoFacet',
+            Label : 'Student Information',
+            Target : '@UI.FieldGroup#StudentInformation',
         },
         {
-            $Type: 'UI.ReferenceFacet',
-            ID: 'StudentLanguagesFacet',
-            Label: 'Student Languages Information',
-            Target: 'Languages/@UI.LineItem',
+            $Type : 'UI.ReferenceFacet',
+            ID : 'StudentLanguagesFacet',
+            Label : 'Student Languages Information',
+            Target : 'Languages/@UI.LineItem',
         },
     ],
+    
 );
 
 annotate StudentDB.Student.Languages with {
@@ -293,22 +306,22 @@ annotate StudentDB.Student.Languages with {
         Common.Text: lang.description,
         Common.TextArrangement: #TextOnly,
         Common.ValueListWithFixedValues: true,
-        Common.ValueList: {
+        Common.ValueList : {
             Label: 'Languages',
-            CollectionPath: 'Languages',
+            CollectionPath : 'Languages',
             Parameters: [
                 {
-                    $Type: 'Common.ValueListParameterInOut',
-                    LocalDataProperty: lang_ID,
-                    ValueListProperty: 'ID'
+                    $Type             : 'Common.ValueListParameterInOut',
+                    LocalDataProperty : lang_ID,
+                    ValueListProperty : 'ID'
                 },
                 {
-                    $Type: 'Common.ValueListParameterDisplayOnly',
-                    ValueListProperty: 'code'
+                    $Type             : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty : 'code'
                 },
                 {
-                    $Type: 'Common.ValueListParameterDisplayOnly',
-                    ValueListProperty: 'description'
+                    $Type             : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty : 'description'
                 },
             ]
         }
@@ -316,20 +329,21 @@ annotate StudentDB.Student.Languages with {
 }
 
 annotate StudentDB.Student with {
-    gender @(
+    gender @(     
         Common.ValueListWithFixedValues: true,
-        Common.ValueList: {
+        Common.ValueList : {
             Label: 'Genders',
-            CollectionPath: 'Gender',
-            Parameters: [
+            CollectionPath : 'Gender',
+            Parameters     : [
                 {
-                    $Type: 'Common.ValueListParameterInOut',
-                    LocalDataProperty: gender,
-                    ValueListProperty: 'code'
+                    $Type             : 'Common.ValueListParameterInOut',
+                    LocalDataProperty : gender,
+                    ValueListProperty : 'code',
                 },
+               
                 {
-                    $Type: 'Common.ValueListParameterDisplayOnly',
-                    ValueListProperty: 'description'
+                    $Type             : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty : 'description'
                 }
             ]
         }
@@ -338,24 +352,51 @@ annotate StudentDB.Student with {
         Common.Text: course.description,
         Common.TextArrangement: #TextOnly,
         Common.ValueListWithFixedValues: true,
-        Common.ValueList: {
+        Common.ValueList : {
             Label: 'Courses',
-            CollectionPath: 'Courses',
+            CollectionPath : 'Courses',
+            Parameters     : [
+                {
+                    $Type             : 'Common.ValueListParameterInOut',
+                    LocalDataProperty : course_ID,
+                    ValueListProperty : 'ID'
+                },
+                {
+                    $Type             : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty : 'code'
+                },
+                   {
+                    $Type             : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty : 'description'
+                },
+            ]
+        }
+    )
+};
+
+annotate StudentDB.Courses.Books with {
+    books @(
+        Common.Text: book.code,
+        Common.TextArrangement: #TextOnly,
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList : {
+            Label: 'Books',
+            CollectionPath : 'Books',
             Parameters: [
                 {
-                    $Type: 'Common.ValueListParameterInOut',
-                    LocalDataProperty: course_ID,
-                    ValueListProperty: 'ID'
+                    $Type             : 'Common.ValueListParameterInOut',
+                    LocalDataProperty : book_ID,
+                    ValueListProperty : 'ID'
                 },
                 {
-                    $Type: 'Common.ValueListParameterDisplayOnly',
-                    ValueListProperty: 'code'
+                    $Type             : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty : 'code'
                 },
                 {
-                    $Type: 'Common.ValueListParameterDisplayOnly',
-                    ValueListProperty: 'description'
-                }
+                    $Type             : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty : 'description'
+                },
             ]
         }
     );
-};
+}
